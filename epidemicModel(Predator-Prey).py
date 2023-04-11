@@ -1,3 +1,8 @@
+'''
+Useful articles for this project:
+   * https://www.maa.org/press/periodicals/loci/joma/the-sir-model-for-spread-of-disease-the-differential-equation-model
+
+'''
 import numpy as np
 import pygame
 
@@ -87,12 +92,16 @@ def main():
     # Frame count
     FPS = 60
 
+    # Extra space to display a potential GUI
+    BUFFER_SPACE = 250
+
     # Creating the sprite groups
     totalPop = pygame.sprite.Group()
     atRiskPop = pygame.sprite.Group()
     infectedPop = pygame.sprite.Group()
     recoveredPop = pygame.sprite.Group()
 
+    # Color codes for the Entity object (makes them more standardized to set them as variables)
     status_infected = 'infected'
     status_atRisk = 'atRisk'
     status_recovered = 'recovered'
@@ -100,12 +109,12 @@ def main():
     # Instantiating the sprite groups with the initial entity values
     for i in range(population):
         if i < inital_infected:
-            entity = Entity(screen, (np.random.randint(window_width - 250), np.random.randint(window_height)), status_infected)
+            entity = Entity(screen, (np.random.randint(window_width - BUFFER_SPACE), np.random.randint(window_height)), status_infected)
             infectedPop.add(entity)
             infected[0] += 1
 
         else:
-            entity = Entity(screen, (np.random.randint(window_width - 250), np.random.randint(window_height)), status_atRisk)
+            entity = Entity(screen, (np.random.randint(window_width - BUFFER_SPACE), np.random.randint(window_height)), status_atRisk)
             atRiskPop.add(entity)
             totalPop.add(entity)
 
@@ -131,11 +140,19 @@ def main():
         infected[step] = infected[step-1] + infectedDt(susceptible[step-1], infected[step-1]) * h
         recovered[step] = recovered[step-1] + recoveredDt(infected[step-1]) * h
 
+        # Updating the amount of recovered entities in the population
+        for j in range(int(recovered[step] - recovered[step-1])):
+            entity = Entity(screen, (np.random.randint(window_width - BUFFER_SPACE), np.random.randint(window_height)), status_recovered)
+            recoveredPop.add(entity)
+            totalPop.add(entity)
+
         # Update the number of infected individuals
         infected[-1] = len(infectedPop
                            )
         clock.tick(FPS)
+        entity.update()
 
 if __name__ == '__main__':
+    # Initiating pygame
     pygame.init()
     main()  
