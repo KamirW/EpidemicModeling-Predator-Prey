@@ -66,6 +66,7 @@ class Entity(pygame.sprite.Sprite):
             self.image.fill((0, 0, 255))
 
     def update(self):
+        global h
         if self.colorCode == 'infected':
             if np.random.rand() < beta * h:
                 self.colorCode = 'recovered'
@@ -120,37 +121,50 @@ def main():
 
     # Setting up the clock
     clock = pygame.time.Clock()
+    done = False
+    s = len(steps)
 
     # Main Loop
-    for step in range(len(steps)):
+    while not done:
+        for step in range(s):
+            for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+
+            # Updating the population
+            totalPop.update()
+
+            screen.fill((255, 255, 255)) 
+            totalPop.draw(screen)     
+            pygame.display.update()
+
+            # Update the differential equations using Euler's method
+            susceptible[step] = susceptible[step-1] + atRiskDt(susceptible[step-1], infected[step-1]) * h
+            infected[step] = infected[step-1] + infectedDt(susceptible[step-1], infected[step-1]) * h
+            recovered[step] = recovered[step-1] + recoveredDt(infected[step-1]) * h
+
+            # Updating the amount of recovered entities in the population
+            for j in range(int(recovered[step] - recovered[step-1])):
+                entity = Entity(screen, (np.random.randint(window_width - BUFFER_SPACE), np.random.randint(window_height)), status_recovered)
+                recoveredPop.add(entity)
+                totalPop.add(entity)
+
+            # Update the number of infected individuals
+            infected[-1] = len(infectedPop)
+
+            # clock.tick(FPS)
+            entity.update()
+
+        print("Done!!!!!")
         for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
-
-        # Updating the population
-        totalPop.update()
-
-        screen.fill((255, 255, 255)) 
-        totalPop.draw(screen)     
-        pygame.display.update()
-
-        # Update the differential equations using Euler's method
-        susceptible[step] = susceptible[step-1] + atRiskDt(susceptible[step-1], infected[step-1]) * h
-        infected[step] = infected[step-1] + infectedDt(susceptible[step-1], infected[step-1]) * h
-        recovered[step] = recovered[step-1] + recoveredDt(infected[step-1]) * h
-
-        # Updating the amount of recovered entities in the population
-        for j in range(int(recovered[step] - recovered[step-1])):
-            entity = Entity(screen, (np.random.randint(window_width - BUFFER_SPACE), np.random.randint(window_height)), status_recovered)
-            recoveredPop.add(entity)
-            totalPop.add(entity)
-
-        # Update the number of infected individuals
-        infected[-1] = len(infectedPop
-                           )
-        clock.tick(FPS)
-        entity.update()
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+                        
+        # Making sure that the screen doesn't keep updating
+        s = 0
+        
 
 if __name__ == '__main__':
     # Initiating pygame
