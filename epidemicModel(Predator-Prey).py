@@ -66,7 +66,6 @@ class Entity(pygame.sprite.Sprite):
             self.image.fill((0, 0, 255))
 
     def update(self):
-        global h
         if self.colorCode == 'infected':
             if np.random.rand() < beta * h:
                 self.colorCode = 'recovered'
@@ -156,7 +155,7 @@ def main():
             # clock.tick(FPS)
             entity.update()
 
-        print("Done!!!!!")
+        # print("Done!!!!!")
         for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
